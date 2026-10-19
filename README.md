@@ -18,7 +18,7 @@ Também mostra os **termos mais citados** (contagem direta de palavras, sem IA) 
 | Gemini | [aistudio.google.com/apikey](https://aistudio.google.com/apikey) | Conforme o plano do Gemini. Uma análise de 500 comentários usa da ordem de 100 mil tokens. |
 | YouTube Data API v3 | [Google Cloud Console](https://console.cloud.google.com/apis/library/youtube.googleapis.com): ative a API no projeto e crie uma chave em "Credenciais" | Gratuita: 10.000 unidades/dia; cada 100 comentários custam 1 unidade. |
 
-A mesma chave pode servir para os dois serviços se a YouTube Data API v3 for ativada no projeto Google Cloud da chave do Gemini e a chave não tiver restrições que bloqueiem essa API.
+As duas chaves podem ser diferentes (é o caso mais comum): cada uma é informada no seu próprio campo. Opcionalmente, a mesma chave pode servir para os dois serviços se a YouTube Data API v3 for ativada no projeto Google Cloud da chave do Gemini.
 
 Há duas formas de informar as chaves:
 
