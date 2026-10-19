@@ -1,0 +1,209 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Resumo de Comentários</title>
+  <meta name="description" content="Analise os comentários de qualquer vídeo do YouTube e descubra os assuntos mais recorrentes, agrupados por temas.">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="styles.css">
+  <script type="module" src="js/app.js"></script>
+</head>
+<body>
+  <header class="topbar">
+    <div class="wrap topbar-inner">
+      <a class="brand" href="./">
+        <svg viewBox="0 0 24 24" aria-hidden="true" class="brand-icon"><path d="M4 5h16a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H9l-4 3v-3H4a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M7.5 9h9M7.5 12.5h5.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        <span>Resumo de Comentários</span>
+      </a>
+      <button type="button" class="btn btn-ghost" id="open-settings" aria-haspopup="dialog" aria-label="Configurações">
+        <svg viewBox="0 0 24 24" aria-hidden="true" class="icon"><path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1Z" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>
+        <span>Configurações</span>
+        <span class="dot" id="settings-dot" hidden></span>
+      </button>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <section class="hero">
+      <h1>O que o público está dizendo?</h1>
+      <p class="lead">Cole o link de um vídeo do YouTube. A ferramenta coleta os comentários e usa o Gemini para agrupar os assuntos mais recorrentes por tema, com contagem exata e exemplos.</p>
+    </section>
+
+    <form class="card form" id="analyze-form" novalidate>
+      <label class="field field-url">
+        <span class="label">Link do vídeo</span>
+        <input type="url" id="video-url" name="url" inputmode="url" autocomplete="off" required
+               placeholder="https://www.youtube.com/watch?v=..." aria-describedby="url-error">
+      </label>
+      <div class="form-row">
+        <label class="field">
+          <span class="label">Comentários a analisar</span>
+          <select id="max-comments" name="max">
+            <option value="100">100</option>
+            <option value="300">300</option>
+            <option value="500" selected>500</option>
+            <option value="1000">1.000</option>
+            <option value="2000">2.000</option>
+            <option value="3000">3.000</option>
+          </select>
+        </label>
+        <label class="field">
+          <span class="label">Quais comentários</span>
+          <select id="order" name="order">
+            <option value="relevance" selected>Mais relevantes</option>
+            <option value="time">Mais recentes</option>
+          </select>
+        </label>
+        <label class="field">
+          <span class="label">Idioma do relatório</span>
+          <select id="language" name="language">
+            <option value="pt-BR" selected>Português</option>
+            <option value="en">Inglês</option>
+            <option value="es">Espanhol</option>
+          </select>
+        </label>
+      </div>
+      <p class="form-error" id="url-error" role="alert" hidden></p>
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary" id="submit-btn">Analisar comentários</button>
+        <button type="button" class="btn btn-ghost" id="cancel-btn" hidden>Cancelar</button>
+      </div>
+    </form>
+
+    <section class="card progress" id="progress" hidden aria-live="polite">
+      <ol class="steps">
+        <li data-step="comments"><span class="step-mark"></span><span class="step-text">Coletando comentários</span><span class="step-detail"></span></li>
+        <li data-step="themes"><span class="step-mark"></span><span class="step-text">Identificando temas recorrentes</span><span class="step-detail"></span></li>
+        <li data-step="classify"><span class="step-mark"></span><span class="step-text">Classificando cada comentário</span><span class="step-detail"></span></li>
+      </ol>
+      <div class="bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-label="Progresso da análise"><span id="progress-fill"></span></div>
+    </section>
+
+    <section class="alert" id="error-box" role="alert" hidden>
+      <strong>Não foi possível concluir a análise.</strong>
+      <p id="error-text"></p>
+    </section>
+
+    <section id="results" hidden>
+      <article class="card video-card">
+        <img id="video-thumb" alt="" width="320" height="180">
+        <div class="video-info">
+          <h2 id="video-title"></h2>
+          <p class="muted" id="video-meta"></p>
+          <a id="video-link" target="_blank" rel="noopener noreferrer">Abrir no YouTube</a>
+        </div>
+      </article>
+
+      <div class="stats">
+        <div class="stat"><span class="stat-value" id="stat-total"></span><span class="stat-label">comentários analisados</span></div>
+        <div class="stat"><span class="stat-value" id="stat-themes"></span><span class="stat-label">temas recorrentes</span></div>
+        <div class="stat"><span class="stat-value" id="stat-top"></span><span class="stat-label">no tema mais citado</span></div>
+      </div>
+
+      <article class="card">
+        <h3>Resumo geral</h3>
+        <p id="summary"></p>
+        <div class="sentiment">
+          <div class="sentiment-bar" id="sentiment-bar" aria-hidden="true">
+            <span class="seg seg-positivo"></span><span class="seg seg-neutro"></span><span class="seg seg-negativo"></span>
+          </div>
+          <ul class="legend" id="sentiment-legend"></ul>
+        </div>
+      </article>
+
+      <div class="section-head">
+        <h3>Temas mais recorrentes</h3>
+        <div class="export">
+          <button type="button" class="btn btn-ghost btn-sm" id="copy-md">Copiar resumo</button>
+          <button type="button" class="btn btn-ghost btn-sm" id="download-csv">Baixar planilha (CSV)</button>
+          <button type="button" class="btn btn-ghost btn-sm" id="download-json">Baixar JSON</button>
+        </div>
+      </div>
+      <ol class="themes" id="themes"></ol>
+
+      <div class="two-col">
+        <article class="card" id="insights-card">
+          <h3>Conclusões e oportunidades</h3>
+          <ul class="insights" id="insights"></ul>
+        </article>
+        <article class="card">
+          <h3>Termos mais citados</h3>
+          <p class="muted small">Contagem direta das palavras, sem IA: em quantos comentários cada termo aparece.</p>
+          <ul class="terms" id="terms"></ul>
+        </article>
+      </div>
+      <p class="muted small footnote" id="footnote"></p>
+    </section>
+  </main>
+
+  <footer class="wrap footer muted small">
+    Os comentários são lidos pela YouTube Data API e analisados pelo Gemini. Nada é armazenado no servidor.
+  </footer>
+
+  <dialog id="settings" aria-labelledby="settings-title">
+    <form method="dialog" class="settings-form" id="settings-form">
+      <h2 id="settings-title">Configurações</h2>
+      <p class="muted small" id="settings-status"></p>
+
+      <label class="field">
+        <span class="label">Chave da YouTube Data API v3</span>
+        <input type="password" id="youtube-key" autocomplete="off" spellcheck="false" placeholder="AIza...">
+      </label>
+      <label class="field">
+        <span class="label">Chave do Gemini</span>
+        <input type="password" id="gemini-key" autocomplete="off" spellcheck="false" placeholder="AIza...">
+      </label>
+      <label class="field" id="password-field" hidden>
+        <span class="label">Senha de acesso (para usar as chaves do servidor)</span>
+        <input type="password" id="app-password" autocomplete="current-password">
+      </label>
+      <label class="field">
+        <span class="label">Modelo do Gemini</span>
+        <select id="model">
+          <option value="gemini-3.8-flash">Gemini 3.8 Flash (recomendado)</option>
+          <option value="gemini-3.5-flash-lite">Gemini 3.5 Flash-Lite (mais rápido e barato)</option>
+          <option value="gemini-flash-latest">Gemini Flash (versão mais recente)</option>
+        </select>
+      </label>
+      <label class="check">
+        <input type="checkbox" id="remember" checked>
+        <span>Lembrar neste navegador</span>
+      </label>
+      <p class="muted small">As chaves ficam guardadas apenas neste navegador. A cada análise, elas passam pelo servidor desta ferramenta só para serem repassadas ao Google, sem nenhum armazenamento. Deixe em branco para usar as chaves configuradas no servidor, se houver.</p>
+      <details class="help">
+        <summary>Como obter as chaves</summary>
+        <ol>
+          <li><strong>Gemini:</strong> acesse <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener noreferrer">aistudio.google.com/apikey</a> e copie sua chave.</li>
+          <li><strong>YouTube:</strong> no <a href="https://console.cloud.google.com/apis/library/youtube.googleapis.com" target="_blank" rel="noopener noreferrer">Google Cloud Console</a>, selecione o mesmo projeto da chave do Gemini e clique em "Ativar" na YouTube Data API v3. Depois, em "Credenciais", crie uma chave de API (ou libere essa API na chave existente).</li>
+          <li>A cota gratuita do YouTube permite cerca de 10.000 páginas de 100 comentários por dia.</li>
+        </ol>
+      </details>
+      <div class="dialog-actions">
+        <button type="button" class="btn btn-ghost" id="clear-settings">Apagar chaves</button>
+        <button type="submit" class="btn btn-primary" value="save">Salvar</button>
+      </div>
+    </form>
+  </dialog>
+
+  <template id="theme-template">
+    <li class="card theme">
+      <div class="theme-head">
+        <span class="theme-rank"></span>
+        <div class="theme-title-wrap">
+          <h4 class="theme-title"></h4>
+          <p class="theme-desc muted"></p>
+        </div>
+        <div class="theme-count"><strong></strong><span></span></div>
+      </div>
+      <div class="theme-bar"><span></span></div>
+      <div class="theme-meta small muted"></div>
+      <ul class="quotes"></ul>
+      <details class="theme-all">
+        <summary></summary>
+        <ul class="quotes quotes-all"></ul>
+      </details>
+    </li>
+  </template>
+</body>
+</html>

@@ -1,0 +1,16 @@
+{
+  "name": "comments-resumer",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Analisa comentários de vídeos do YouTube e agrupa os mais recorrentes por temas usando o Gemini.",
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev": "node --env-file-if-exists=.env scripts/dev-server.js",
+    "test": "node --test \"test/*.test.js\"",
+    "check": "node scripts/check-syntax.js",
+    "test:e2e": "node test/e2e/run.mjs"
+  }
+}
