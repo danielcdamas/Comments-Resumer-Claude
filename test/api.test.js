@@ -79,6 +79,12 @@ test('fluxo completo: comentários -> temas -> classificação', async () => {
   assert.deepEqual(sentConfig.responseSchema.properties.assignments.items.properties.t.enum, ['t1', 't2', 't3', 'outros']);
 });
 
+test('max "all" busca todos os comentários disponíveis', async () => {
+  const res = await api.comments.POST(post({ url: 'abcdefghijk', max: 'all' }));
+  assert.equal(res.status, 200);
+  assert.equal((await res.json()).comments.length, 120);
+});
+
 test('validação de entrada e mensagens de erro', async () => {
   const cases = [
     [api.comments.POST(post({ url: 'https://vimeo.com/1' })), 400, /não reconhecido/],

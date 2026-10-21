@@ -4,7 +4,7 @@ Ferramenta web que lê os comentários de qualquer vídeo do YouTube e mostra **
 
 ## Como funciona
 
-1. **Coleta** — a YouTube Data API v3 devolve até 3.000 comentários de primeiro nível (os mais relevantes ou os mais recentes).
+1. **Coleta** — a YouTube Data API v3 devolve a quantidade escolhida (de 10 a 100, ou "Todos", até 3.000) de comentários de primeiro nível, os mais relevantes ou os mais recentes.
 2. **Descoberta de temas** — o Gemini lê os comentários e propõe de 4 a 12 temas recorrentes, um resumo geral e conclusões práticas.
 3. **Classificação** — em lotes de 200, em paralelo, o Gemini classifica cada comentário em um tema (ou em "Outros assuntos") e indica o sentimento.
 4. **Consolidação** — o próprio código conta os comentários por tema. Os números não são estimativas do modelo: cada comentário é rastreável até o tema em que foi contado.

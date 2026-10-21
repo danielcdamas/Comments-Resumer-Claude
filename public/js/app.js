@@ -223,7 +223,7 @@ async function analyze(event) {
   }
 
   const options = {
-    max: Number($('#max-comments').value),
+    max: $('#max-comments').value === 'all' ? 'all' : Number($('#max-comments').value),
     order: $('#order').value,
     language: $('#language').value,
     model: state.settings.model || state.config?.defaultModel,
@@ -239,7 +239,7 @@ async function analyze(event) {
 
   try {
     // Etapa 1: coleta
-    setStep('comments', 'active', `até ${fmt.format(options.max)}`);
+    setStep('comments', 'active', options.max === 'all' ? 'todos disponíveis' : `até ${fmt.format(options.max)}`);
     setProgress(3);
     const { video, comments } = await api('/api/comments', { url, max: options.max, order: options.order }, signal);
     setStep('comments', 'done', `${fmt.format(comments.length)} coletados`);

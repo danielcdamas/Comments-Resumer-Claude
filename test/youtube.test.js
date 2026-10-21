@@ -29,6 +29,13 @@ test('fetchComments pagina até o limite pedido', async () => {
   assert.equal(new Set(comments.map((c) => c.id)).size, 150);
 });
 
+test('fetchComments pede ao YouTube só a quantidade necessária', async () => {
+  const before = mock.calls.commentThreads;
+  const comments = await fetchComments('abcdefghijk', KEY, { max: 10 }, env);
+  assert.equal(comments.length, 10);
+  assert.equal(mock.calls.commentThreads - before, 1);
+});
+
 test('fetchComments para quando acabam os comentários', async () => {
   const comments = await fetchComments('abcdefghijk', KEY, { max: 3000 }, env);
   assert.equal(comments.length, 250);
