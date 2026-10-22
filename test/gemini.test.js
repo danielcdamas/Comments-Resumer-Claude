@@ -121,3 +121,14 @@ test('generateJson tenta novamente em sobrecarga (503) e traduz erros definitivo
   globalThis.fetch = async () => jsonResponse(404, { error: { code: 404, message: 'models/x is not found' } });
   await assert.rejects(generateJson({ model: 'x-1', key: 'k', prompt: 'p', schema: {}, env: {} }), /não está disponível/);
 });
+
+test('themeRange ajusta a quantidade de temas ao tamanho da amostra', async () => {
+  const { themeRange } = await import('../lib/gemini.js');
+  assert.equal(themeRange(2), 'exatamente 1');
+  assert.equal(themeRange(10), 'entre 1 e 3');
+  assert.equal(themeRange(30), 'entre 1 e 10');
+  assert.equal(themeRange(40), 'entre 4 e 12');
+  assert.equal(themeRange(3000), 'entre 4 e 12');
+  const prompt = buildThemesPrompt({ comments: Array.from({ length: 10 }, () => ({ text: 'x', likes: 0 })), video: {} });
+  assert.match(prompt, /Proponha entre 1 e 3 temas/);
+});

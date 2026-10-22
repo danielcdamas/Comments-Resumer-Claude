@@ -66,7 +66,7 @@ async function fullFlow(page, label) {
 
   // Sem chaves: abre configurações
   await page.fill('#video-url', 'https://www.youtube.com/watch?v=abcdefghijk');
-  await page.selectOption('#max-comments', '500');
+  await page.selectOption('#max-comments', 'all');
   await page.click('#submit-btn');
   await page.waitForSelector('dialog#settings[open]');
   assert.match(await page.textContent('#settings-status'), /Falta informar a chave: YouTube e Gemini/);
@@ -120,6 +120,23 @@ async function fullFlow(page, label) {
 
 await scenario('desktop - fluxo completo', { viewport: { width: 1280, height: 900 } }, (p) => fullFlow(p, 'desktop'));
 await scenario('celular - fluxo completo', { ...devices['iPhone 13'], browserName: undefined }, (p) => fullFlow(p, 'celular'));
+
+await scenario('poucos comentários (10)', { viewport: { width: 1280, height: 900 } }, async (page) => {
+  await page.goto(BASE);
+  await page.evaluate(() =>
+    localStorage.setItem('comments-resumer.settings', JSON.stringify({ youtubeKey: 'AIzaUSERYTKEYxxxxxxxxxxxxxxxxxx', geminiKey: 'AIzaUSERGEMKEYxxxxxxxxxxxxxxxxx', remember: true })),
+  );
+  await page.goto(`${BASE}/?v=abcdefghijk`);
+  const options = await page.$$eval('#max-comments option', (els) => els.map((e) => e.textContent));
+  assert.deepEqual(options, ['Todos (até 3.000)', '10', '20', '30', '40', '50', '60', '70', '80', '90', '100']);
+  assert.equal(await page.inputValue('#max-comments'), '100', 'padrão 100');
+  await page.selectOption('#max-comments', '10');
+  await page.click('#submit-btn');
+  await page.waitForSelector('#results:not([hidden])', { timeout: 30_000 });
+  assert.equal(await page.textContent('#stat-total'), '10');
+  const counts = await page.$$eval('.theme-count strong', (els) => els.map((e) => Number(e.textContent)));
+  assert.equal(counts.reduce((a, b) => a + b, 0), 10);
+});
 
 await scenario('erro: comentários desativados', { viewport: { width: 1280, height: 900 } }, async (page) => {
   await page.goto(BASE);
